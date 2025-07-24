@@ -5,13 +5,6 @@ import hashlib
 import os
 import sys
 import util
-import shutil
-import collections
-import fnmatch
-
-def print_error(text:str,error_code:int=1) -> None:
-     print(text,file=sys.stderr)
-     exit(error_code)
 
 def main():
      parser = argparse.ArgumentParser()
@@ -41,25 +34,25 @@ def main():
      print(ARGS)
      
      match ARGS.command:
-          case "add"          : cmd_add(ARGS)
-          case "cat-file"     : cmd_cat_file(ARGS)
-          case "check-ignore" : cmd_check_ignore(ARGS)
-          case "checkout"     : cmd_checkout(ARGS)
-          case "commit"       : cmd_commit(ARGS)
-          case "hash-object"  : cmd_hash_object(ARGS)
-          case "init"         : cmd_init(ARGS)
-          case "log"          : cmd_log(ARGS)
-          case "ls-files"     : cmd_ls_files(ARGS)
-          case "ls-tree"      : cmd_ls_tree(ARGS)
-          case "rev-parse"    : cmd_rev_parse(ARGS)
-          case "rm"           : cmd_rm(ARGS)
-          case "show-ref"     : cmd_show_ref(ARGS)
-          case "status"       : cmd_status(ARGS)
-          case "tag"          : cmd_tag(ARGS)
-          case "write-tree"   : cmd_write_tree(ARGS)
+          # case "add"          : cmd_add(ARGS)
+          # case "cat-file"     : cmd_cat_file(ARGS)
+          # case "check-ignore" : cmd_check_ignore(ARGS)
+          # case "checkout"     : cmd_checkout(ARGS)
+          # case "commit"       : cmd_commit(ARGS)
+          # case "hash-object"  : cmd_hash_object(ARGS)
+          case "init"         : util.init_repo(ARGS.path)
+          # case "log"          : cmd_log(ARGS)
+          # case "ls-files"     : cmd_ls_files(ARGS)
+          # case "ls-tree"      : cmd_ls_tree(ARGS)
+          # case "rev-parse"    : cmd_rev_parse(ARGS)
+          # case "rm"           : cmd_rm(ARGS)
+          # case "show-ref"     : cmd_show_ref(ARGS)
+          # case "status"       : cmd_status(ARGS)
+          # case "tag"          : cmd_tag(ARGS)
+          # case "write-tree"   : cmd_write_tree(ARGS)
           # custom commands
-          case "find-root"    : cmd_find_root(ARGS)
-          case _              : print_error("Bad cgit command.")
+          case "find-root"    : print(util.get_cgit_root(ARGS.directory))
+          case _              : util.print_error("Bad cgit command.")
 
 def cmd_add(): pass
 def cmd_check_ignore(): pass
@@ -73,47 +66,6 @@ def cmd_rm(): pass
 def cmd_show_ref(): pass
 def cmd_status(): pass
 def cmd_tag(): pass
-
-def cmd_find_root(ARGS:argparse.Namespace) -> None:
-     print(util.get_cgit_root(ARGS.directory))
-
-def cmd_init(ARGS:argparse.Namespace):
-     if not os.path.exists(ARGS.path):
-          print_error(f"the following path does not exists: {ARGS.path}")
-     elif not os.path.isdir(ARGS.path): 
-          print_error(f"the given path is not a directory : {ARGS.path}")
-     elif os.path.exists(os.path.join(ARGS.path,".cgit")) and os.path.isdir(os.path.join(ARGS.path,".cgit")):
-          print_error(f"the given path already a cgit repository")
-     elif util.is_in_cgit_repo(ARGS.path):
-          print_error(f"the given path is already in cgit repository")
-
-     repo_path=os.path.join(ARGS.path,".cgit")
-
-     dir_to_create = [
-          "hooks",
-          "info",
-          "objects/info",
-          "objects/pack",
-          "refs/heads",
-          "refs/tags",
-     ]
-
-     files_to_create = {
-          "config":"config",
-          "description":"description",
-          "HEAD":"HEAD",
-          "info/exclude":"exclude",
-          # TODO : add default hooks file creation
-     }
-
-     for d in dir_to_create:
-          os.makedirs(os.path.join(repo_path,d),exist_ok=True)
-     for f,fc in files_to_create.items():
-          shutil.copy(
-               src=os.path.join(os.path.dirname(os.path.realpath(os.path.abspath(__file__))),"default",fc),
-               dst=os.path.join(repo_path,f)
-          )
-     print(f"Initialized empty cgit repository in {repo_path}")
 
 def util_hash_object(content:bytes, object_type:str = "blob", write:bool = False) ->  str:
      
