@@ -2,5 +2,6 @@
 .mypy_cache
 .venv
 __pycache__
-test
+test-*
+test.py
 .cgit
