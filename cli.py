@@ -27,6 +27,7 @@ def main():
      hash_object_parser.add_argument('-stdin',required=False,action="store_true",help="Read content from standard in")
 
      find_root_parser = commands.add_parser("find-root")
+     find_root_parser.add_argument('-d',required=False,action="store",help="absolute path for which to find cgit root",dest="directory",default=os.path.abspath(os.curdir))
 
      cat_file_parser = commands.add_parser("cat-file")
      cat_file_parser.add_argument("object")
@@ -71,18 +72,18 @@ def cmd_show_ref(): pass
 def cmd_status(): pass
 def cmd_tag(): pass
 
-def util_find_root() -> str|None:
-     current_directory=os.path.realpath(".")
+def cmd_find_root(ARGS:argparse.Namespace) -> None:
+     found_root = False
+     current_directory = ARGS.directory
      parent_directory = os.path.realpath(os.path.join(current_directory,".."))
      while current_directory != parent_directory:
           if os.path.isdir(os.path.join(current_directory,".cgit")):
-               return current_directory
+               found_root = True
+               print(current_directory)
           current_directory = parent_directory
           parent_directory = os.path.realpath(os.path.join(current_directory,".."))
-     return None
-
-def cmd_find_root(ARGS:argparse.Namespace) -> None:
-     print(util_find_root())
+     if not found_root:
+          print(None)
 
 def cmd_init(ARGS:argparse.Namespace):
      if not os.path.exists(ARGS.path):
