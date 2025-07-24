@@ -7,7 +7,7 @@ import sys
 import collections
 import fnmatch
 
-def printerr(text:str,error_code:int=1) -> None:
+def print_error(text:str,error_code:int=1) -> None:
      print(text,file=sys.stderr)
      exit(error_code)
 
@@ -56,7 +56,7 @@ def main():
           case "write-tree"   : cmd_write_tree(ARGS)
           # custom commands
           case "find-root"    : cmd_find_root(ARGS)
-          case _              : printerr("Bad cgit command.")
+          case _              : print_error("Bad cgit command.")
 
 def cmd_add(): pass
 def cmd_check_ignore(): pass
@@ -86,11 +86,11 @@ def cmd_find_root(ARGS:argparse.Namespace) -> None:
 
 def cmd_init(ARGS:argparse.Namespace):
      if not os.path.exists(ARGS.path):
-          printerr(f"the following path does not exists: {ARGS.path}")
+          print_error(f"the following path does not exists: {ARGS.path}")
      elif not os.path.isdir(ARGS.path): 
-          printerr(f"the given path is not a directorypip : {ARGS.path}")
+          print_error(f"the given path is not a directory : {ARGS.path}")
      elif os.path.exists(os.path.join(ARGS.path,".cgit")) and os.path.isdir(os.path.join(ARGS.path,".cgit")):
-          printerr(f"the given path already a cgit repository")
+          print_error(f"the given path already a cgit repository")
      repo_path=os.path.join(ARGS.path,".cgit")
      os.makedirs(os.path.join(repo_path,"objects"),exist_ok=True)
      os.makedirs(os.path.join(repo_path,"refs","heads"),exist_ok=True)
@@ -108,7 +108,7 @@ def util_hash_object(content:bytes, object_type:str = "blob", write:bool = False
                sha_dir = os.path.join(repo_root,".cgit","objects",sha1_hash[:2])
                sha_file = os.path.join(repo_root,".cgit","objects",sha1_hash[:2],sha1_hash[2:])
           else:
-               printerr("current dir is not a cgit repository")
+               print_error("current dir is not a cgit repository")
           
           os.makedirs(sha_dir,exist_ok=True)
           with open(sha_file,"wb") as f:
@@ -129,7 +129,7 @@ def cmd_cat_file(ARGS:argparse.Namespace) -> None:
           sha_dir = os.path.join(repo_root,".cgit","objects",ARGS.object[:2])
           sha_file = os.path.join(repo_root,".cgit","objects",ARGS.object[:2],ARGS.object[2:])
           if not os.path.isfile(sha_file):
-               printerr("object does not exist")
+               print_error("object does not exist")
           with open(sha_file,"rb") as f:
                content = f.read()
           if ARGS.p:
@@ -137,7 +137,7 @@ def cmd_cat_file(ARGS:argparse.Namespace) -> None:
           elif ARGS.t:
                print(content.split(b'\x00')[0].decode())
      else:
-          printerr("could not find a cgit repository")
+          print_error("could not find a cgit repository")
 
 def util_write_tree(dir_path: str):
      hash_list = []
@@ -164,7 +164,7 @@ def cmd_write_tree(ARGS:argparse.Namespace):
      if cgit_root:
           util_write_tree(cgit_root)
      else:
-          printerr("could not find a cgit repository")
+          print_error("could not find a cgit repository")
 
 if __name__ == '__main__':
      main()
