@@ -8,4 +8,5 @@ a little not so capable younger brother of git
 commands
 * find-root [DONE]
     * if `-d` absolute path is provided else from the current working dir give the root of the cgit repo
-
+* init [DONE]
+    * if `path` absolute path is provided that dir will be init else the current dir

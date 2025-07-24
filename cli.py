@@ -4,6 +4,8 @@ import argparse
 import hashlib
 import os
 import sys
+import util
+import shutil
 import collections
 import fnmatch
 
@@ -14,8 +16,7 @@ def print_error(text:str,error_code:int=1) -> None:
 def main():
      parser = argparse.ArgumentParser()
      
-     commands = parser.add_subparsers(dest="command")
-     commands.required = True
+     commands = parser.add_subparsers(dest="command",required=True)
 
      init_parser = commands.add_parser("init")
      init_parser.add_argument("path", nargs="?", default=os.getcwd())
@@ -37,6 +38,7 @@ def main():
      write_tree_parser = commands.add_parser("write-tree")
      
      ARGS = parser.parse_args()
+     print(ARGS)
      
      match ARGS.command:
           case "add"          : cmd_add(ARGS)
@@ -73,17 +75,7 @@ def cmd_status(): pass
 def cmd_tag(): pass
 
 def cmd_find_root(ARGS:argparse.Namespace) -> None:
-     found_root = False
-     current_directory = ARGS.directory
-     parent_directory = os.path.realpath(os.path.join(current_directory,".."))
-     while current_directory != parent_directory:
-          if os.path.isdir(os.path.join(current_directory,".cgit")):
-               found_root = True
-               print(current_directory)
-          current_directory = parent_directory
-          parent_directory = os.path.realpath(os.path.join(current_directory,".."))
-     if not found_root:
-          print(None)
+     print(util.get_cgit_root(ARGS.directory))
 
 def cmd_init(ARGS:argparse.Namespace):
      if not os.path.exists(ARGS.path):
@@ -92,11 +84,35 @@ def cmd_init(ARGS:argparse.Namespace):
           print_error(f"the given path is not a directory : {ARGS.path}")
      elif os.path.exists(os.path.join(ARGS.path,".cgit")) and os.path.isdir(os.path.join(ARGS.path,".cgit")):
           print_error(f"the given path already a cgit repository")
+     elif util.is_in_cgit_repo(ARGS.path):
+          print_error(f"the given path is already in cgit repository")
+
      repo_path=os.path.join(ARGS.path,".cgit")
-     os.makedirs(os.path.join(repo_path,"objects"),exist_ok=True)
-     os.makedirs(os.path.join(repo_path,"refs","heads"),exist_ok=True)
-     with open(os.path.join(repo_path,"HEAD"),"w") as f:
-          f.write("ref: refs/heads/main\n")
+
+     dir_to_create = [
+          "hooks",
+          "info",
+          "objects/info",
+          "objects/pack",
+          "refs/heads",
+          "refs/tags",
+     ]
+
+     files_to_create = {
+          "config":"config",
+          "description":"description",
+          "HEAD":"HEAD",
+          "info/exclude":"exclude",
+          # TODO : add default hooks file creation
+     }
+
+     for d in dir_to_create:
+          os.makedirs(os.path.join(repo_path,d),exist_ok=True)
+     for f,fc in files_to_create.items():
+          shutil.copy(
+               src=os.path.join(os.path.dirname(os.path.realpath(os.path.abspath(__file__))),"default",fc),
+               dst=os.path.join(repo_path,f)
+          )
      print(f"Initialized empty cgit repository in {repo_path}")
 
 def util_hash_object(content:bytes, object_type:str = "blob", write:bool = False) ->  str:
