@@ -1,0 +1,6 @@
+tree
+120000 : symlink
+040000 : subtree
+160000 : submodule
+100644 : regular non executable
+100755 : regular executable
