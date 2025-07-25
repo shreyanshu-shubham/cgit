@@ -60,6 +60,7 @@ def main():
           case "init"         : util.init_repo(ARGS.path)
           # custom commands
           case "find-root"    : print(util.get_cgit_root(ARGS.directory))
+          case "ignore-list"    : print(util.get_cgit_root(ARGS.directory))
           case _              : util.print_error("Bad cgit command.")
 
 def util_write_tree(dir_path: str):

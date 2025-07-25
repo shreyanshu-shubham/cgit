@@ -2,7 +2,7 @@
 .mypy_cache
 .venv
 __pycache__
-test-*
+test-repo
 demo-repo
 test.py
 .cgit

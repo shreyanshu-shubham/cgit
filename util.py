@@ -5,6 +5,7 @@ import sys
 import shutil
 import zlib
 import hashlib
+from utility import gitignore_to_regex
 
 def print_error(text:str,error_code:int=1) -> None:
      print(text,file=sys.stderr)
@@ -85,3 +86,6 @@ def hash_object(content:str,object_type:str ,write_to_repo:bool=False) -> None:
         with open(os.path.join(cgit_root,".cgit/objects",sha1hash[:2],sha1hash[2:]),"wb") as f:
             f.write(zlib.compress(content))
     print(sha1hash)
+
+def get_ignore_list():
+    gitignore_to_regex.parse()
