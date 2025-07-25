@@ -3,6 +3,7 @@
 .venv
 __pycache__
 test-*
+demo-repo
 test.py
 .cgit
 .pytest_cache

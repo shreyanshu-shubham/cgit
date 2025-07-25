@@ -58,6 +58,20 @@ def init_repo(base_dir):
         )
     print(f"Initialized empty cgit repository in {repo_path}")
 
+def cat_file(sha1hash,flag_type,flag_print) -> None:
+    cgit_root = get_cgit_root(os.path.abspath(os.curdir))
+    if not cgit_root:
+        print_error("not within a cgit repository")
+    object_file = os.path.join(cgit_root,".cgit/objects",sha1hash[:2],sha1hash[2:])
+    if not os.path.exists(object_file):
+        print_error("the object does  not exists")
+    with open(object_file,"rb") as f:
+        uncompressed_data = zlib.decompress(f.read()).decode()
+    if flag_print:
+        print(uncompressed_data.split("\x00")[-1])
+    if flag_type:
+        print(uncompressed_data.split("\x00")[0].split(" ")[0])
+
 def create_file_blob(cgit_path, file_path):
     pass
 

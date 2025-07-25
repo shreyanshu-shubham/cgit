@@ -24,9 +24,10 @@ def main():
      find_root_parser.add_argument('-d',required=False,action="store",help="absolute path for which to find cgit root",dest="directory",default=os.path.abspath(os.curdir))
 
      cat_file_parser = commands.add_parser("cat-file")
-     cat_file_parser.add_argument("object")
-     cat_file_parser.add_argument('-p',required=False,action="store_true",help="hash of object to print")
-     cat_file_parser.add_argument('-t',required=False,action="store_true",help="hash of object of which type to print")
+     cat_file_parser.add_argument("object",metavar="sha1hash")
+     cat_file_parser_flags = cat_file_parser.add_mutually_exclusive_group(required=True)
+     cat_file_parser_flags.add_argument('-p',required=False,action="store_true",help="print the content of the object")
+     cat_file_parser_flags.add_argument('-t',required=False,action="store_true",help="print the type of the object")
 
      write_tree_parser = commands.add_parser("write-tree")
      
@@ -35,7 +36,7 @@ def main():
      
      match ARGS.command:
           # case "add"          : cmd_add(ARGS)
-          # case "cat-file"     : cmd_cat_file(ARGS)
+          case "cat-file"     : util.cat_file(ARGS.object,ARGS.t,ARGS.t)
           # case "check-ignore" : cmd_check_ignore(ARGS)
           # case "checkout"     : cmd_checkout(ARGS)
           # case "commit"       : cmd_commit(ARGS)
@@ -91,22 +92,6 @@ def cmd_hash_object(ARGS):
           with open(ARGS.file,"rb") as f:
                content = f.read()
      print(util_hash_object(content=content,object_type=ARGS.t,write=ARGS.w))
-
-def cmd_cat_file(ARGS:argparse.Namespace) -> None:
-     repo_root = util_find_root()
-     if repo_root:
-          sha_dir = os.path.join(repo_root,".cgit","objects",ARGS.object[:2])
-          sha_file = os.path.join(repo_root,".cgit","objects",ARGS.object[:2],ARGS.object[2:])
-          if not os.path.isfile(sha_file):
-               print_error("object does not exist")
-          with open(sha_file,"rb") as f:
-               content = f.read()
-          if ARGS.p:
-               print(content.split(b'\x00')[1].decode())
-          elif ARGS.t:
-               print(content.split(b'\x00')[0].decode())
-     else:
-          print_error("could not find a cgit repository")
 
 def util_write_tree(dir_path: str):
      hash_list = []
