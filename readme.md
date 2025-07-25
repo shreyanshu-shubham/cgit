@@ -7,12 +7,12 @@ a little not so capable younger brother of git
 * init
     * if `path` absolute path is provided that dir will be init else the current dir
 * cat-file
+* hash-object
 ### commands todo
 * add
 * check-ignore
 * checkout
 * commit
-* hash-object
 * log
 * ls-files
 * ls-tree

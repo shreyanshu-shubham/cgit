@@ -3,6 +3,8 @@
 import os
 import sys
 import shutil
+import zlib
+import hashlib
 
 def print_error(text:str,error_code:int=1) -> None:
      print(text,file=sys.stderr)
@@ -72,11 +74,14 @@ def cat_file(sha1hash,flag_type,flag_print) -> None:
     if flag_type:
         print(uncompressed_data.split("\x00")[0].split(" ")[0])
 
-def create_file_blob(cgit_path, file_path):
-    pass
-
-def create_tree(cgit_path):
-    pass
-
-def create_commit(cgit_path):
-    pass
+def hash_object(content:str,object_type:str ,write_to_repo:bool=False) -> None:
+    content = f"{object_type} {len(content)}\x00{content}".encode()
+    sha1hash = hashlib.sha1(content).hexdigest()
+    if write_to_repo:
+        cgit_root = get_cgit_root(os.path.abspath(os.curdir))
+        if not cgit_root:
+            print_error("not within a cgit repository")
+        os.makedirs(os.path.join(cgit_root,".cgit/objects",sha1hash[:2]))
+        with open(os.path.join(cgit_root,".cgit/objects",sha1hash[:2],sha1hash[2:]),"wb") as f:
+            f.write(zlib.compress(content))
+    print(sha1hash)
