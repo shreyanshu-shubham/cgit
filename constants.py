@@ -1,6 +1,7 @@
 from typing import Dict
 
 data_dir_name:str = ".cgit"
+hash_object_level_1_size = 2
 
 file_content_config:str = """[core]
 	repositoryformatversion = 0

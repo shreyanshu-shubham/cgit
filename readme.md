@@ -6,8 +6,12 @@ a little not so capable younger brother of git
     * if `-d` absolute path is provided else from the current working dir give the root of the cgit repo
 * init
     * if `path` absolute path is provided that dir will be init else the current dir
-* cat-file
 * hash-object
+    * -t --type : commit, tree, blob 
+    * -w --write: write the changes to object database
+    * -stdin : use the input from the terminal, ignore the files
+    * files: files to generate hash object for the provided files
+* cat-file
 ### commands todo
 * add
     * pathlist/filelist

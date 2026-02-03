@@ -17,11 +17,11 @@ def main():
      init_parser.add_argument("path", help="path to directory to initialize as a cgit repository",default=os.getcwd())
 
      hash_object_parser = commands.add_parser('hash-object')
-     hash_object_parser.add_argument('-w',required=False,action="store_true",help="Write it in the repository")
-     hash_object_parser.add_argument('-t',required=False,action="store",choices=["blob","tree","commit"],help="Type of hash",default="blob")
+     hash_object_parser.add_argument('-w',"--write",required=False,action="store_true",help="Write it in the repository")
+     hash_object_parser.add_argument('-t',"--type",required=False,action="store",choices=["blob","tree","commit"],help="Type of hash object",default="blob")
      hash_object_parser_input = hash_object_parser.add_mutually_exclusive_group(required=True)
-     hash_object_parser_input.add_argument('-file',required=False,action="store",nargs=1,help="Get hash for content for this file")
-     hash_object_parser_input.add_argument('-stdin',required=False,action="store_true",help="Read content from standard in")
+     hash_object_parser_input.add_argument('-stdin',action="store_true",help="Read content from standard in")
+     hash_object_parser_input.add_argument('files',action="store",nargs=argparse.REMAINDER,help="Get hash for content for this file")
 
      cat_file_parser = commands.add_parser("cat-file")
      cat_file_parser.add_argument("object",metavar="sha1hash")
@@ -48,14 +48,10 @@ def main():
           # case "status"       : cmd_status(ARGS)
           # case "tag"          : cmd_tag(ARGS)
           # case "write-tree"   : cmd_write_tree(ARGS)
-          case "cat-file"     : util.cat_file(ARGS.object,ARGS.t,ARGS.t)
-          case "hash-object"  : 
-               if ARGS.stdin:
-                    content = input()
-               else:
-                    with open(ARGS.file,"r") as f:
-                         content = f.read()
-               util.hash_object(content,ARGS.t,ARGS.w)
+          case "cat-file": 
+               util.cat_file(ARGS.object,ARGS.t,ARGS.t)
+          case "hash-object":
+               util.hash_object(ARGS.type,ARGS.write,ARGS.stdin,ARGS.files)
           case "init"         : 
                util.init_repo(Path(ARGS.path))
           # custom commands
