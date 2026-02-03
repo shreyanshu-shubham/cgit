@@ -2,63 +2,51 @@
 
 import os
 import sys
-import shutil
 import zlib
 import hashlib
+from pathlib import Path
+import constants
 
 def print_error(text:str,error_code:int=1) -> None:
      print(text,file=sys.stderr)
      exit(error_code)
 
-def get_cgit_root(current_directory) -> str|None:
-    parent_directory = os.path.realpath(os.path.join(current_directory,".."))
-    while current_directory != parent_directory:
-        if os.path.isdir(os.path.join(current_directory,".cgit")):
+def get_cgit_root(current_directory:Path) -> str|None:
+    while True:
+        cgit_dir:Path = current_directory / constants.data_dir_name
+        if cgit_dir.is_dir():
             return current_directory
-        current_directory = parent_directory
-        parent_directory = os.path.realpath(os.path.join(current_directory,".."))
-    return None
+        elif current_directory == current_directory.parent:
+            return None
+        else:
+            current_directory = current_directory.parent
 
-def is_in_cgit_repo(directory):
+def is_in_cgit_repo(directory:Path) -> bool:
     return get_cgit_root(directory) is not None
 
-def init_repo(base_dir):
-    if not os.path.exists(base_dir):
-        print_error(f"the following path does not exists: {base_dir}")
-    elif not os.path.isdir(base_dir): 
-        print_error(f"the given path is not a directory : {base_dir}")
-    elif os.path.exists(os.path.join(base_dir,".cgit")) and os.path.isdir(os.path.join(base_dir,".cgit")):
-        print_error(f"the given path already a cgit repository")
+def init_repo(base_dir: Path) -> None:
+    if not base_dir.exists():
+        if not base_dir.parent.exists():
+            print_error(f"the following path does not exists: {base_dir.parent.absolute()}\ncannot initialize the project: {base_dir.name}")
+        base_dir.mkdir()
+
+    cgit_dir:Path = base_dir / ".cgit"
+    if cgit_dir.exists() and cgit_dir.is_dir():
+        print_error("the given path already a cgit repository")
     elif is_in_cgit_repo(base_dir):
-        print_error(f"the given path is already in cgit repository")
+        print_error("the given path is already in cgit repository")
 
-    repo_path=os.path.join(base_dir,".cgit")
-
-    dir_to_create = [
-        "hooks",
-        "info",
-        "objects/info",
-        "objects/pack",
-        "refs/heads",
-        "refs/tags",
-    ]
-
-    files_to_create = {
-        "config":"config",
-        "description":"description",
-        "HEAD":"HEAD",
-        "info/exclude":"exclude",
-        # TODO : add default hooks file creation
-    }
-
-    for d in dir_to_create:
-        os.makedirs(os.path.join(repo_path,d),exist_ok=True)
-    for f,fc in files_to_create.items():
-        shutil.copy(
-            src=os.path.join(os.path.dirname(os.path.realpath(os.path.abspath(__file__))),"default",fc),
-            dst=os.path.join(repo_path,f)
-        )
-    print(f"Initialized empty cgit repository in {repo_path}")
+    cgit_dir.mkdir()
+    for name,details in constants.default_data_dir_structure.items():
+        match details.get("type"):
+            case "directory":
+                (cgit_dir / name).mkdir(parents=True)
+            case "file":
+                file_path:Path = cgit_dir / details.get("path")
+                file_path.parent.mkdir(parents=True,exist_ok=True)
+                with file_path.open("w") as f:
+                    f.write(details.get("content"))
+    print(f"Initialized empty cgit repository in {cgit_dir}")
 
 def cat_file(sha1hash,flag_type,flag_print) -> None:
     cgit_root = get_cgit_root(os.path.abspath(os.curdir))

@@ -1,27 +1,20 @@
 #!/usr/bin/env python3
 
 import argparse
-import hashlib
 import os
-import sys
 import util
+from pathlib import Path
 
 def main():
      parser = argparse.ArgumentParser()
      
      commands = parser.add_subparsers(dest="command",required=True)
 
-     init_parser = commands.add_parser("init")
-     init_parser.add_argument("path", nargs="?", default=os.getcwd())
-
      find_root_parser = commands.add_parser("find-root")
-     find_root_parser.add_argument('-d',required=False,action="store",help="absolute path for which to find cgit root",dest="directory",default=os.path.abspath(os.curdir))
+     find_root_parser.add_argument('-d',required=False,action="store",help="path for which to find cgit root",dest="directory",default=os.path.abspath(os.curdir))
 
-     cat_file_parser = commands.add_parser("cat-file")
-     cat_file_parser.add_argument("object",metavar="sha1hash")
-     cat_file_parser_flags = cat_file_parser.add_mutually_exclusive_group(required=True)
-     cat_file_parser_flags.add_argument('-p',required=False,action="store_true",help="print the content of the object")
-     cat_file_parser_flags.add_argument('-t',required=False,action="store_true",help="print the type of the object")
+     init_parser = commands.add_parser("init")
+     init_parser.add_argument("path", help="path to directory to initialize as a cgit repository",default=os.getcwd())
 
      hash_object_parser = commands.add_parser('hash-object')
      hash_object_parser.add_argument('-w',required=False,action="store_true",help="Write it in the repository")
@@ -29,6 +22,12 @@ def main():
      hash_object_parser_input = hash_object_parser.add_mutually_exclusive_group(required=True)
      hash_object_parser_input.add_argument('-file',required=False,action="store",nargs=1,help="Get hash for content for this file")
      hash_object_parser_input.add_argument('-stdin',required=False,action="store_true",help="Read content from standard in")
+
+     cat_file_parser = commands.add_parser("cat-file")
+     cat_file_parser.add_argument("object",metavar="sha1hash")
+     cat_file_parser_flags = cat_file_parser.add_mutually_exclusive_group(required=True)
+     cat_file_parser_flags.add_argument('-p',required=False,action="store_true",help="print the content of the object")
+     cat_file_parser_flags.add_argument('-t',required=False,action="store_true",help="print the type of the object")
 
      write_tree_parser = commands.add_parser("write-tree")
      
@@ -57,10 +56,11 @@ def main():
                     with open(ARGS.file,"r") as f:
                          content = f.read()
                util.hash_object(content,ARGS.t,ARGS.w)
-          case "init"         : util.init_repo(ARGS.path)
+          case "init"         : 
+               util.init_repo(Path(ARGS.path))
           # custom commands
-          case "find-root"    : print(util.get_cgit_root(ARGS.directory))
-          case _              : util.print_error("Bad cgit command.")
+          case "find-root": 
+               print(util.get_cgit_root(Path(ARGS.directory)))
 
 def util_write_tree(dir_path: str):
      hash_list = []
