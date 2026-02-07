@@ -23,6 +23,9 @@ def main():
      hash_object_parser_input.add_argument('-stdin',action="store_true",help="Read content from standard in")
      hash_object_parser_input.add_argument('files',action="store",nargs=argparse.REMAINDER,help="Get hash for content for this file")
 
+     list_object_parser = commands.add_parser("list-object")
+     list_object_parser.add_argument("hash",nargs="*",help="hash of object to list details about")
+
      cat_file_parser = commands.add_parser("cat-file")
      cat_file_parser.add_argument("object",metavar="sha1hash")
      cat_file_parser_flags = cat_file_parser.add_mutually_exclusive_group(required=True)
@@ -50,11 +53,12 @@ def main():
           # case "write-tree"   : cmd_write_tree(ARGS)
           case "cat-file": 
                util.cat_file(ARGS.object,ARGS.t,ARGS.t)
+          case "list-object":
+               util.list_object(ARGS.hash)
           case "hash-object":
                util.hash_object(ARGS.type,ARGS.write,ARGS.stdin,ARGS.files)
           case "init"         : 
                util.init_repo(Path(ARGS.path))
-          # custom commands
           case "find-root": 
                print(util.get_cgit_root(Path(ARGS.directory)))
 

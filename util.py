@@ -90,6 +90,24 @@ def hash_object(object_type:str, write:bool= False, stdin:bool = False, files:Li
     for fl,hash_value in file_hash_map.items():
         print(f"{fl.ljust(longest_file_name+2,".")}: {hash_value}")
 
+def get_onject_type_from_object_path(object_file:Path) -> str:
+    with object_file.open("rb") as f:
+        content = f.read()
+    return zlib.decompress(content).decode().split(' ')[0]
+    ...
+
+def list_object(object_hashes:List[str])->None:
+    cgit_dir = get_cgit_directory(Path(os.curdir))
+    if cgit_dir is None:
+        print("could not find a cgit repository")
+    object_dir = cgit_dir / "objects"
+    if len(object_hashes) == 0:
+        for a in object_dir.iterdir():
+            if a.name in ["info","pack"]:
+                continue
+            for b in a.iterdir():
+                print(f"{a.name}{b.name} : {get_onject_type_from_object_path(b)}")
+
 def cat_file(sha1hash,flag_type,flag_print) -> None:
     cgit_root = get_cgit_root(os.path.abspath(os.curdir))
     if not cgit_root:
