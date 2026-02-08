@@ -94,7 +94,6 @@ def get_onject_type_from_object_path(object_file:Path) -> str:
     with object_file.open("rb") as f:
         content = f.read()
     return zlib.decompress(content).decode().split(' ')[0]
-    ...
 
 def list_object(object_hashes:List[str])->None:
     cgit_dir = get_cgit_directory(Path(os.curdir))
@@ -109,11 +108,11 @@ def list_object(object_hashes:List[str])->None:
                 print(f"{a.name}{b.name} : {get_onject_type_from_object_path(b)}")
 
 def cat_file(sha1hash,flag_type,flag_print) -> None:
-    cgit_root = get_cgit_root(os.path.abspath(os.curdir))
-    if not cgit_root:
+    cgit_dir = get_cgit_directory(os.path.abspath(os.curdir))
+    if not cgit_dir:
         print_error("not within a cgit repository")
-    object_file = os.path.join(cgit_root,".cgit/objects",sha1hash[:2],sha1hash[2:])
-    if not os.path.exists(object_file):
+    object_file:Path = cgit_dir/".cgit/objects"/sha1hash[:2]/sha1hash[2:]
+    if not object_file.exists():
         print_error("the object does  not exists")
     with open(object_file,"rb") as f:
         uncompressed_data = zlib.decompress(f.read()).decode()
