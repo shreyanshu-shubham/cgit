@@ -1,3 +1,5 @@
+# This Project is NOT using AI in any capacity
+
 # cgit
 a little not so capable younger brother of git
 
